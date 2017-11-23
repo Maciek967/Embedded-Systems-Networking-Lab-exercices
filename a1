@@ -9,29 +9,23 @@
 
 #include <stdio.h>
 /*---------------------------------------------------------------------------*/
-PROCESS(example_broadcast_process, "Broadcast example");
+PROCESS(a1, "Embedded Networks Assignment");
 
-AUTOSTART_PROCESSES(&example_broadcast_process);
+AUTOSTART_PROCESSES(&a1);
 /*---------------------------------------------------------------------------*/
-//static void
-/*broadcast_recv(struct broadcast_conn *c, const rimeaddr_t *from)
-{
-  printf("broadcast message received from %d.%d: '%s'\n",
-         from->u8[0], from->u8[1], (char *)packetbuf_dataptr());
-}*/
 static const struct broadcast_callbacks broadcast_call;
 static struct broadcast_conn broadcast;
 /*---------------------------------------------------------------------------*/
 
-PROCESS_THREAD(example_broadcast_process, ev, data)
+PROCESS_THREAD(a1, ev, data)
 {
   static struct etimer et;
 
-    int counter = 0;
-    int dec;
+    static int counter = 0;
+    static int dec;
     static float s = 0;
-    int avarageTemperature = 0;
-    int val;
+    static int averageTemperature = 0;
+    static int val;
   PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
 
   PROCESS_BEGIN();
@@ -40,42 +34,41 @@ PROCESS_THREAD(example_broadcast_process, ev, data)
 
  //broadcast_open(&broadcast, 129, &broadcast_call);
 
-while(counter < 5) //AVARAGE OVER 5 SAMPLES
-{
-    etimer_set(&et, CLOCK_SECOND * 2);
-    SENSORS_ACTIVATE(sht11_sensor);
+	while(counter < 5) //AVERAGE OVER 5 SAMPLES
+	{
+    		etimer_set(&et, CLOCK_SECOND * 2);
+    		SENSORS_ACTIVATE(sht11_sensor);
 
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+    		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
-     val = sht11_sensor.value(SHT11_SENSOR_TEMP);
+     		val = sht11_sensor.value(SHT11_SENSOR_TEMP);
 
-        if(val != -1) 
-            {
-                 s= ((0.01*val) - 39.60);             
-            }
-        dec = s;
-        avarageTemperature = avarageTemperature + dec;
-        //printf("\nTemperature=%d C\n", dec);
+        	if(val != -1) 
+        	{
+          		s = ((0.01*val) - 39.60);          
+        	}
 
-        //counter ++;
-    }
-    avarageTemperature = avarageTemperature/5;
+        	dec = s;
+        	averageTemperature = averageTemperature + dec;
+		counter ++;
+    	}
+    	averageTemperature = averageTemperature/5;
 	
-	//DISPLAYS AVARAGE TEMPERATURE
-    printf("\nAvarage Temperature=%d C\n", avarageTemperature);
+	//DISPLAYS AVERAGE TEMPERATURE
+   	printf("\nAverage Temperature=%d C\n", averageTemperature);
 
-  while(1) 
-  {
+  	while(1) 
+  	{
 
     /* Delay 2-4 seconds */
     //etimer_set(&et, CLOCK_SECOND * 4 + random_rand() % (CLOCK_SECOND * 4));
 
-    PROCESS_WAIT_EVENT_UNTIL((ev==sensors_event) && (data == &button_sensor));
+    	PROCESS_WAIT_EVENT_UNTIL((ev==sensors_event) && (data == &button_sensor));
 
-    packetbuf_copyfrom("Maciej", 7);
-    broadcast_send(&broadcast);
-    printf("Broadcast message sent\n");
-  }
+    		packetbuf_copyfrom("Maciej", 7);
+    		broadcast_send(&broadcast);
+    		printf("Broadcast message sent\n");
+  	}
 
 	etimer_reset(&et);
 	SENSORS_DEACTIVATE(sht11_sensor);
