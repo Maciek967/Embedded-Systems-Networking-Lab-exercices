@@ -40,7 +40,7 @@ PROCESS_THREAD(example_broadcast_process, ev, data)
 
  //broadcast_open(&broadcast, 129, &broadcast_call);
 
-while(counter < 5) 
+while(counter < 5) //AVARAGE OVER 5 SAMPLES
 {
     etimer_set(&et, CLOCK_SECOND * 2);
     SENSORS_ACTIVATE(sht11_sensor);
@@ -49,20 +49,23 @@ while(counter < 5)
 
      val = sht11_sensor.value(SHT11_SENSOR_TEMP);
 
-        if(avarageTemperature != -1) 
+        if(val != -1) 
             {
-                 s= ((0.01*avarageTemperature) - 39.60);             
+                 s= ((0.01*val) - 39.60);             
             }
         dec = s;
         avarageTemperature = avarageTemperature + dec;
-        printf("\nTemperature=%d C\n", dec);
+        //printf("\nTemperature=%d C\n", dec);
 
-        counter ++;
+        //counter ++;
     }
-    avarageTemperature = avarageTemperature/5
+    avarageTemperature = avarageTemperature/5;
+	
+	//DISPLAYS AVARAGE TEMPERATURE
     printf("\nAvarage Temperature=%d C\n", avarageTemperature);
 
-  while(1) {
+  while(1) 
+  {
 
     /* Delay 2-4 seconds */
     //etimer_set(&et, CLOCK_SECOND * 4 + random_rand() % (CLOCK_SECOND * 4));
@@ -74,6 +77,8 @@ while(counter < 5)
     printf("Broadcast message sent\n");
   }
 
-  PROCESS_END();
+	etimer_reset(&et);
+	SENSORS_DEACTIVATE(sht11_sensor);
+  	PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
