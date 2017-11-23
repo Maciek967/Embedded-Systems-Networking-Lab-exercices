@@ -25,6 +25,7 @@ PROCESS_THREAD(a1, ev, data)
     static int dec;
     static float s = 0;
     static int averageTemperature = 0;
+    static int averageHumidity = 0;
     static int val;
   PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
 
@@ -36,11 +37,12 @@ PROCESS_THREAD(a1, ev, data)
 
 	while(counter < 5) //AVERAGE OVER 5 SAMPLES
 	{
-    		etimer_set(&et, CLOCK_SECOND * 2);
+    		//etimer_set(&et, CLOCK_SECOND * 2);
     		SENSORS_ACTIVATE(sht11_sensor);
 
     		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-
+		
+		//TEMPERATURE:
      		val = sht11_sensor.value(SHT11_SENSOR_TEMP);
 
         	if(val != -1) 
@@ -50,12 +52,28 @@ PROCESS_THREAD(a1, ev, data)
 
         	dec = s;
         	averageTemperature = averageTemperature + dec;
+
+		//HUMIDITY:
+		val =sht11_sensor.value(SHT11_SENSOR_HUMIDITY);
+	
+		if(val != -1) 
+		{
+			s= (((0.0405*val) - 4) + ((-2.8 * 0.000001)*(pow(val,2))));  
+		}		
+      		
+		dec = s;
+		averageHumidity = averageHumidity + dec;
+ 
 		counter ++;
     	}
     	averageTemperature = averageTemperature/5;
+	averageHumidity = averageHumidity/5;
 	
-	//DISPLAYS AVERAGE TEMPERATURE
+	//DISPLAYS AVARAGE TEMPERATURE
    	printf("\nAverage Temperature=%d C\n", averageTemperature);
+
+	//DISPLAY AVARAGE HUMIDITY
+	printf("\nAverage Humidity=%d%\n", averageHumidity);
 
   	while(1) 
   	{
