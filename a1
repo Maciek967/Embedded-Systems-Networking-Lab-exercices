@@ -9,7 +9,30 @@
 
 #include <stdio.h>
 
+#include "lib/list.h"
+#include "lib/memb.h"
+
 /*---------------------------------------------------------------------------*/
+/*struct broadcast_message {
+  uint8_t seqno;
+};
+
+struct neighbor {
+  
+  struct neighbor *next;
+
+  rimeaddr_t addr;
+
+  uint16_t last_rssi, last_lqi;
+
+};
+
+#define MAX_NEIGHBORS 16
+
+MEMB(neighbors_memb, struct neighbor, MAX_NEIGHBORS);
+
+LIST(neighbors_list);*/
+
 static const struct broadcast_callbacks broadcast_call;
 static struct broadcast_conn broadcast;
 /*---------------------------------------------------------------------------*/
@@ -20,6 +43,49 @@ PROCESS(temperatureHumidity, "Temperature and Humidity");
 /*---------------------------------------------------------------------------*/
 
 AUTOSTART_PROCESSES(&temperatureHumidity, &example_broadcast_process);
+
+//This function is called whenever a broadcast message is received
+/*static void
+broadcast_recv(struct broadcast_conn *c, const rimeaddr_t *from)
+{
+  struct neighbor *n;
+  struct broadcast_message *m;
+
+  m = packetbuf_dataptr();
+
+  //Check if we already know this neighbor
+  for(n = list_head(neighbors_list); n != NULL; n = list_item_next(n)) {
+
+    if(rimeaddr_cmp(&n->addr, from)) {
+      break;
+    }
+  }
+
+  if(n == NULL) {
+    n = memb_alloc(&neighbors_memb);
+
+    if(n == NULL) {
+      return;
+    }
+
+    rimeaddr_copy(&n->addr, from);
+
+    list_add(neighbors_list, n);
+  }
+
+  n->last_rssi = packetbuf_attr(PACKETBUF_ATTR_RSSI);
+  n->last_lqi = packetbuf_attr(PACKETBUF_ATTR_LINK_QUALITY);
+
+  //Print out a message
+  printf("Broadcast message received from %d.%d, RSSI %u, LQI %u,
+         from->u8[0], from->u8[1],
+         
+         packetbuf_attr(PACKETBUF_ATTR_RSSI),
+         packetbuf_attr(PACKETBUF_ATTR_LINK_QUALITY));
+         
+}
+
+static const struct broadcast_callbacks broadcast_call = {broadcast_recv};*/
 
 //BROADCAST PROCESS
 PROCESS_THREAD(example_broadcast_process, ev, data)
