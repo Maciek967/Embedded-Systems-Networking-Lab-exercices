@@ -8,16 +8,49 @@
 #include "dev/leds.h"
 
 #include <stdio.h>
-/*---------------------------------------------------------------------------*/
-PROCESS(a1, "Embedded Networks Assignment");
 
-AUTOSTART_PROCESSES(&a1);
 /*---------------------------------------------------------------------------*/
 static const struct broadcast_callbacks broadcast_call;
 static struct broadcast_conn broadcast;
 /*---------------------------------------------------------------------------*/
 
-PROCESS_THREAD(a1, ev, data)
+/*---------------------------------------------------------------------------*/
+PROCESS(example_broadcast_process, "Broadcast");
+PROCESS(temperatureHumidity, "Temperature and Humidity");
+/*---------------------------------------------------------------------------*/
+
+AUTOSTART_PROCESSES(&temperatureHumidity, &example_broadcast_process);
+
+//BROADCAST PROCESS
+PROCESS_THREAD(example_broadcast_process, ev, data)
+{
+	SENSORS_ACTIVATE(button_sensor);
+
+	PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
+
+  	PROCESS_BEGIN();
+
+	broadcast_open(&broadcast, 129, &broadcast_call);
+
+while(1) 
+  	{
+
+    /* Delay 2-4 seconds */
+    //etimer_set(&et, CLOCK_SECOND * 4 + random_rand() % (CLOCK_SECOND * 4));
+
+    	PROCESS_WAIT_EVENT_UNTIL((ev==sensors_event) && (data == &button_sensor));
+
+    		packetbuf_copyfrom("Maciej", 7);
+    		broadcast_send(&broadcast);
+    		printf("Broadcast message sent\n");
+  	}
+PROCESS_END();
+	
+  	
+}
+
+//TEMPERATURE AND HUMIDITY PROCESS
+PROCESS_THREAD(temperatureHumidity, ev, data)
 {
   static struct etimer et;
 
@@ -27,17 +60,15 @@ PROCESS_THREAD(a1, ev, data)
     static int averageTemperature = 0;
     static int averageHumidity = 0;
     static int val;
-  PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
+  
+PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
 
-  PROCESS_BEGIN();
+PROCESS_BEGIN();
 
-  SENSORS_ACTIVATE(button_sensor);
-
- //broadcast_open(&broadcast, 129, &broadcast_call);
-
+SENSORS_ACTIVATE(button_sensor);
 	while(counter < 5) //AVERAGE OVER 5 SAMPLES
 	{
-    		//etimer_set(&et, CLOCK_SECOND * 2);
+    		etimer_set(&et, CLOCK_SECOND * 2);
     		SENSORS_ACTIVATE(sht11_sensor);
 
     		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
@@ -74,22 +105,10 @@ PROCESS_THREAD(a1, ev, data)
 
 	//DISPLAY AVARAGE HUMIDITY
 	printf("\nAverage Humidity=%d%\n", averageHumidity);
-
-  	while(1) 
-  	{
-
-    /* Delay 2-4 seconds */
-    //etimer_set(&et, CLOCK_SECOND * 4 + random_rand() % (CLOCK_SECOND * 4));
-
-    	PROCESS_WAIT_EVENT_UNTIL((ev==sensors_event) && (data == &button_sensor));
-
-    		packetbuf_copyfrom("Maciej", 7);
-    		broadcast_send(&broadcast);
-    		printf("Broadcast message sent\n");
-  	}
+	printf("\n");
 
 	etimer_reset(&et);
 	SENSORS_DEACTIVATE(sht11_sensor);
-  	PROCESS_END();
-}
+	PROCESS_END();
+  }
 /*---------------------------------------------------------------------------*/
