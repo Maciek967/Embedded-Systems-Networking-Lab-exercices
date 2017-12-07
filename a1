@@ -13,7 +13,7 @@
 #include "lib/memb.h"
 
 /*---------------------------------------------------------------------------*/
-/*struct broadcast_message {
+struct broadcast_message {
   uint8_t seqno;
 };
 
@@ -31,7 +31,7 @@ struct neighbor {
 
 MEMB(neighbors_memb, struct neighbor, MAX_NEIGHBORS);
 
-LIST(neighbors_list);*/
+LIST(neighbors_list);
 
 static const struct broadcast_callbacks broadcast_call;
 static struct broadcast_conn broadcast;
@@ -45,7 +45,7 @@ PROCESS(temperatureHumidity, "Temperature and Humidity");
 AUTOSTART_PROCESSES(&temperatureHumidity, &example_broadcast_process);
 
 //This function is called whenever a broadcast message is received
-/*static void
+static void
 broadcast_recv(struct broadcast_conn *c, const rimeaddr_t *from)
 {
   struct neighbor *n;
@@ -77,19 +77,22 @@ broadcast_recv(struct broadcast_conn *c, const rimeaddr_t *from)
   n->last_lqi = packetbuf_attr(PACKETBUF_ATTR_LINK_QUALITY);
 
   //Print out a message
-  printf("Broadcast message received from %d.%d, RSSI %u, LQI %u,
+  printf("Broadcast message received from %d.%d, RSSI %u, LQI %u",
          from->u8[0], from->u8[1],
          
          packetbuf_attr(PACKETBUF_ATTR_RSSI),
          packetbuf_attr(PACKETBUF_ATTR_LINK_QUALITY));
-         
+         printf("\n");
 }
 
-static const struct broadcast_callbacks broadcast_call = {broadcast_recv};*/
+static const struct broadcast_callbacks broadcast_call = {broadcast_recv};
 
 //BROADCAST PROCESS
 PROCESS_THREAD(example_broadcast_process, ev, data)
 {
+
+	leds_on(LEDS_GREEN);
+
 	SENSORS_ACTIVATE(button_sensor);
 
 	PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
@@ -109,6 +112,8 @@ while(1)
     		packetbuf_copyfrom("Maciej", 7);
     		broadcast_send(&broadcast);
     		printf("Broadcast message sent\n");
+
+		leds_off(LEDS_GREEN);
   	}
 PROCESS_END();
 	
