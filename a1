@@ -113,8 +113,9 @@ while(1)
     		broadcast_send(&broadcast);
     		printf("Broadcast message sent\n");
 
-		leds_off(LEDS_GREEN);
+		
   	}
+leds_off(LEDS_GREEN);
 PROCESS_END();
 	
   	
